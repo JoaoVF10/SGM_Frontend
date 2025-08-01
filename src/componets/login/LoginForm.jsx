@@ -24,11 +24,11 @@ function FormularioLogin({ onSubmit, matricula, setMatricula, senha, setSenha })
                     onChange={(e) => setSenha(e.target.value)}
                 />
                 <div className="flex justify-center">
-                
+
                     <ButtonSubmit color='color' type="button" onClick={() => navigate('/cadastrarAluno')}>Cadastrar</ButtonSubmit>
                     <ButtonSubmit>Entrar</ButtonSubmit>
                 </div>
-                
+
             </form>
         </div>
     );

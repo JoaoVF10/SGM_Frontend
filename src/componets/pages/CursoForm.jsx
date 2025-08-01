@@ -1,13 +1,15 @@
 import { useEffect, useState } from "react";
-import api from "../services/api";  // seu axios já configurado
-import Campo from "../form/Campo";   // componente de input estilizado
-import ButtonSubmit from "../form/Button"; // botão estilizado
+import api from "../services/api";
+import Campo from "../form/Campo";
+import ButtonSubmit from "../form/Button";
 
 const niveisCurso = ["GRADUACAO", "TECNICO", "MESTRADO", "DOUTORADO", "OUTRO"];
 
 export default function CursoForm() {
   const [curso, setCurso] = useState(null);
+  const [cursos, setCursos] = useState([]);
   const [form, setForm] = useState({
+    id: null,
     nome: "",
     nivel: niveisCurso[0],
     duracao: 6,
@@ -18,16 +20,29 @@ export default function CursoForm() {
   const [mensagem, setMensagem] = useState("");
 
   useEffect(() => {
-    // Buscar instituições para dropdown
     api.get("/instituicoes")
       .then(res => {
         setInstituicoes(res.data);
-        if (res.data.length > 0) setForm(f => ({ ...f, instituicaoId: res.data[0].id }));
+        if (res.data.length > 0) {
+          setForm(f => ({ ...f, instituicaoId: res.data[0].id }));
+        }
       })
       .catch(err => {
         console.error("Erro ao carregar instituições:", err);
       });
+
+    carregarCursos();
   }, []);
+
+  function carregarCursos() {
+    api.get("/cursos")
+      .then(res => {
+        setCursos(res.data);
+      })
+      .catch(err => {
+        console.error("Erro ao carregar cursos:", err);
+      });
+  }
 
   function handleChange(e) {
     const { name, value } = e.target;
@@ -38,31 +53,42 @@ export default function CursoForm() {
   }
 
   function salvar() {
-
     const novoCurso = {
       nome: form.nome,
       nivel: form.nivel,
       duracao: form.duracao,
-      instituicao: { id: form.instituicaoId }
+      instituicaoId: form.instituicaoId,
     };
 
-    api.post("/cursos", novoCurso)
+    const metodo = form.id ? api.put : api.post;
+    const url = form.id ? `/cursos/${form.id}` : "/cursos";
+
+    metodo(url, novoCurso)
       .then(res => {
-        setCurso(res.data);
-        setMensagem("Curso cadastrado com sucesso!");
+        setMensagem(form.id ? "Curso atualizado com sucesso!" : "Curso cadastrado com sucesso!");
         setEditando(false);
+        setForm({
+          id: null,
+          nome: "",
+          nivel: niveisCurso[0],
+          duracao: 6,
+          instituicaoId: instituicoes.length > 0 ? instituicoes[0].id : "",
+        });
+        carregarCursos();
       })
       .catch(err => {
-        console.error("Erro ao cadastrar curso:", err);
-        setMensagem("Erro ao cadastrar curso.");
+        console.error("Erro ao salvar curso:", err);
+        setMensagem("Erro ao salvar curso.");
       });
   }
 
   if (instituicoes.length === 0) return <div className="text-center mt-10">Carregando instituições...</div>;
 
   return (
-    <div className="max-w-[500px] w-[74vw] min-w-[330px] mx-auto mt-10 mb-10 p-6 rounded-2xl shadow-2xl border-2 border-primaria">
-      <h2 className="text-2xl font-semibold mb-4">Cadastrar Curso</h2>
+    <div className="max-w-[600px] mx-auto mt-10 mb-10 p-6 rounded-2xl shadow-2xl border-2 border-primaria">
+      <h2 className="text-2xl font-semibold mb-4">
+        {form.id ? "Editar Curso" : "Cadastrar Curso"}
+      </h2>
 
       <Campo
         label="Nome"
@@ -126,6 +152,7 @@ export default function CursoForm() {
               color="gray"
               onClick={() => {
                 setForm({
+                  id: null,
                   nome: "",
                   nivel: niveisCurso[0],
                   duracao: 6,
@@ -139,9 +166,11 @@ export default function CursoForm() {
             </ButtonSubmit>
             <ButtonSubmit
               onClick={salvar}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg"
+              className={`${
+                form.id ? "bg-yellow-600" : "bg-blue-600"
+              } text-white px-4 py-2 rounded-lg`}
             >
-              Cadastrar
+              {form.id ? "Salvar Alterações" : "Cadastrar"}
             </ButtonSubmit>
           </>
         ) : (
@@ -152,6 +181,40 @@ export default function CursoForm() {
           >
             Editar
           </ButtonSubmit>
+        )}
+      </div>
+
+      <div className="mt-10">
+        <h3 className="text-xl font-semibold mb-4">Cursos Cadastrados</h3>
+        {cursos.length === 0 ? (
+          <p className="text-gray-600">Nenhum curso cadastrado ainda.</p>
+        ) : (
+          <ul className="space-y-2">
+            {cursos.map(c => (
+              <li key={c.id} className="border p-3 rounded bg-gray-50 flex justify-between items-center">
+                <div>
+                  <strong>{c.nome}</strong> — {c.nivel} ({c.duracao} semestres) <br />
+                  <small>Instituição: {c.instituicaoResponseDTO?.nome}</small>
+                </div>
+                <button
+                  className="text-sm bg-yellow-400 hover:bg-yellow-500 text-white px-2 py-1 rounded"
+                  onClick={() => {
+                    setForm({
+                      id: c.id,
+                      nome: c.nome,
+                      nivel: c.nivel,
+                      duracao: c.duracao,
+                      instituicaoId: c.instituicaoResponseDTO?.id || "",
+                    });
+                    setEditando(true);
+                    setMensagem("");
+                  }}
+                >
+                  Editar
+                </button>
+              </li>
+            ))}
+          </ul>
         )}
       </div>
     </div>

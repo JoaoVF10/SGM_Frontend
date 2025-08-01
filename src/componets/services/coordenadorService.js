@@ -1,13 +1,13 @@
 import api from "./api";
 
-const API_URL = "/coordenadores";
+const API_URL = "/professores/coordenadores";
 
 export const getCoordenadores = () => {
   return api.get(API_URL);
 };
 
 export const createCoordenador = (coordenadorData) => {
-  return api.post(API_URL, coordenadorData);
+  return api.post("/professores", coordenadorData);  // <-- rota correta
 };
 
 export const getCoordenadorById = (id) => {
@@ -15,7 +15,7 @@ export const getCoordenadorById = (id) => {
 };
 
 export const updateCoordenador = (id, coordenadorData) => {
-  return api.put(`${API_URL}/${id}`, coordenadorData);
+   return api.put(`/professores/${id}`, coordenadorData);
 };
 
 export const deleteCoordenador = (id) => {
@@ -24,4 +24,8 @@ export const deleteCoordenador = (id) => {
 
 export const getCursos = () => {
   return api.get("/cursos");
+};
+
+export const getInstituicoes = () => {
+  return api.get("/instituicoes");
 };

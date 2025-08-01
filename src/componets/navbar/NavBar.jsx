@@ -34,6 +34,8 @@ function NavBar() {
           <NavItem to="/coordenadores" label="Coordenadores" />
           <NavItem to="/alunos" label="Alunos" />
           <NavItem to="/disciplinas" label="Disciplinas" />
+           <NavItem to="/cursos/novo" label="Cursos" />
+            <NavItem to="/processos-seletivos" label="Processos Seletivos" />
         </ScrollContainer>
       )}
 
@@ -44,6 +46,8 @@ function NavBar() {
           <NavItem to="/disciplinas" label="Disciplinas" />
           <NavItem to="/monitorias" label="Monitoria" />
           <NavItem to="/professor" label="Painel Professor" />
+           <NavItem to="/cursos/novo" label="Cursos" />
+
         </ScrollContainer>
       )}
     </nav>
